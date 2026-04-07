@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "decision-engine"
+version = "0.1.0"
+description = "Deterministic decision engine with conflict reasoning and explainable outputs (no AI APIs)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "DecisionEngine" }]
+keywords = ["decision-engine", "reasoning", "conflict-resolution", "explainability"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+
+[project.scripts]
+decision-engine = "decision_engine.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["decision_engine*"]
+

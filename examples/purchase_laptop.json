@@ -1,0 +1,115 @@
+{
+  "options": [
+    { "id": "a", "label": "Laptop A" },
+    { "id": "b", "label": "Laptop B" },
+    { "id": "c", "label": "Laptop C" }
+  ],
+  "factors": [
+    { "name": "price_usd", "weight": 2.0, "direction": "lower_is_better", "min_value": 700, "max_value": 1600 },
+    { "name": "battery_hours", "weight": 1.5, "direction": "higher_is_better", "min_value": 6, "max_value": 18 },
+    { "name": "weight_kg", "weight": 1.2, "direction": "lower_is_better", "min_value": 1.0, "max_value": 2.5 },
+    { "name": "repair_risk", "weight": 1.0, "direction": "lower_is_better", "min_value": 0, "max_value": 10 }
+  ],
+  "inputs": [
+    {
+      "id": "s1",
+      "strength": "hard",
+      "source": { "name": "user", "reliability": 0.9 },
+      "timestamp": "2026-04-01T12:00:00Z",
+      "claim": { "type": "constraint", "factor": "price_usd", "op": "<=", "bound": 1300 }
+    },
+    {
+      "id": "s2",
+      "strength": "soft",
+      "source": { "name": "user", "reliability": 0.9 },
+      "timestamp": "2026-04-01T12:05:00Z",
+      "claim": { "type": "preference", "factor": "battery_hours", "direction": "higher_is_better" },
+      "note": "Battery matters because of travel."
+    },
+
+    {
+      "id": "s3",
+      "strength": "soft",
+      "source": { "name": "spec_sheet", "reliability": 0.85 },
+      "timestamp": "2026-03-20T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "a", "factor": "price_usd", "value": 1250 }
+    },
+    {
+      "id": "s4",
+      "strength": "soft",
+      "source": { "name": "review_site", "reliability": 0.6 },
+      "timestamp": "2025-12-01T08:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "a", "factor": "price_usd", "value": 1199 },
+      "note": "Older pricing; might be outdated."
+    },
+    {
+      "id": "s5",
+      "strength": "soft",
+      "source": { "name": "spec_sheet", "reliability": 0.85 },
+      "timestamp": "2026-03-20T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "a", "factor": "battery_hours", "value": 12 }
+    },
+    {
+      "id": "s6",
+      "strength": "soft",
+      "source": { "name": "review_site", "reliability": 0.6 },
+      "timestamp": "2026-03-15T10:00:00Z",
+      "confidence": 0.7,
+      "claim": { "type": "factor_value", "option_id": "a", "factor": "battery_hours", "value": 9 },
+      "note": "Real-world battery lower than claimed."
+    },
+
+    {
+      "id": "s7",
+      "strength": "soft",
+      "source": { "name": "spec_sheet", "reliability": 0.85 },
+      "timestamp": "2026-03-20T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "b", "factor": "price_usd", "value": 1350 }
+    },
+    {
+      "id": "s8",
+      "strength": "soft",
+      "source": { "name": "spec_sheet", "reliability": 0.85 },
+      "timestamp": "2026-03-20T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "b", "factor": "battery_hours", "value": 15 }
+    },
+
+    {
+      "id": "s9",
+      "strength": "soft",
+      "source": { "name": "spec_sheet", "reliability": 0.85 },
+      "timestamp": "2026-03-20T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "c", "factor": "price_usd", "value": 1100 }
+    },
+    {
+      "id": "s10",
+      "strength": "soft",
+      "source": { "name": "review_site", "reliability": 0.7 },
+      "timestamp": "2026-03-10T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "c", "factor": "battery_hours", "value": 8 }
+    },
+
+    {
+      "id": "s11",
+      "strength": "soft",
+      "source": { "name": "review_site", "reliability": 0.7 },
+      "timestamp": "2026-03-10T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "c", "factor": "repair_risk", "value": 7 }
+    },
+    {
+      "id": "s12",
+      "strength": "soft",
+      "source": { "name": "review_site", "reliability": 0.7 },
+      "timestamp": "2026-03-10T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "a", "factor": "repair_risk", "value": 3 }
+    },
+    {
+      "id": "s13",
+      "strength": "soft",
+      "source": { "name": "review_site", "reliability": 0.7 },
+      "timestamp": "2026-03-10T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "b", "factor": "repair_risk", "value": 4 }
+    }
+  ]
+}
+

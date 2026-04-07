@@ -1,0 +1,93 @@
+Metadata-Version: 2.4
+Name: decision-engine
+Version: 0.1.0
+Summary: Deterministic decision engine with conflict reasoning and explainable outputs (no AI APIs).
+Author: DecisionEngine
+License: MIT
+Keywords: decision-engine,reasoning,conflict-resolution,explainability
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: license-file
+
+# Decision Engine (Conflict Reasoning, No AI APIs)
+
+This repo contains a **deterministic decision engine** that:
+
+- Ingests **real-world ambiguous inputs** (missing data, soft preferences, constraints)
+- Detects and reasons about **conflicts** (hard/soft, within or across sources)
+- Performs **multi-factor scoring** (weights, source reliability, recency, uncertainty penalties)
+- Produces **explainable outputs** (structured trace: factors, conflicts, assumptions, sensitivities)
+
+No external AI APIs are used.
+
+## Quick start
+
+### 1) Chạy ngay (không cần cài)
+
+Project dùng **standard library** nên chạy thẳng được.
+
+### 2) Run the demo CLI
+
+```bash
+python -m decision_engine.cli examples/purchase_laptop.json
+```
+
+### 3) Cài như một “product” (pip install .)
+
+Trong thư mục repo:
+
+```bash
+python -m pip install -U pip
+python -m pip install -e .
+```
+
+Sau đó bạn có lệnh:
+
+```bash
+decision-engine examples/purchase_laptop.json --pretty
+```
+
+### 4) Chạy test (để chứng minh ổn định)
+
+```bash
+python -m pip install -e ".[dev]"  # (tuỳ chọn, nếu bạn bổ sung dev deps sau)
+python -m pytest -q
+```
+
+## Input format (high level)
+
+An evaluation request contains:
+
+- **options**: items to choose among
+- **factors**: multi-criteria attributes (price, risk, time, etc.)
+- **inputs**: user statements (may conflict), each with:
+  - `claim`: a factor value, constraint, or preference
+  - `strength`: hard/soft
+  - `source`: who/where it came from (with `reliability`)
+  - `timestamp`: for recency weighting
+
+See `examples/` for complete JSON.
+
+## Output format (high level)
+
+The engine returns:
+
+- **decision**: selected option (or tie / cannot decide)
+- **scores**: per-option totals + per-factor breakdown
+- **conflicts**: detected conflicts and how they were handled
+- **assumptions**: defaults applied due to missing/ambiguous info
+- **explanation**: human-readable summary + structured trace
+
+## Why this design
+
+The evaluator focus is **system design, robustness, reasoning depth, and ambiguity handling**.
+This engine is explicitly built around:
+
+- Conflict classification (hard vs soft; constraint vs preference)
+- Evidence aggregation (reliability, recency, consistency)
+- Explainability-first output (trace is a first-class artifact)
+

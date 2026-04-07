@@ -1,0 +1,2 @@
+[console_scripts]
+decision-engine = decision_engine.cli:main

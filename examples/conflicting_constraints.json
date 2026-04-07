@@ -1,0 +1,57 @@
+{
+  "options": [
+    { "id": "x", "label": "Option X" },
+    { "id": "y", "label": "Option Y" }
+  ],
+  "factors": [
+    { "name": "latency_ms", "weight": 2.0, "direction": "lower_is_better", "min_value": 50, "max_value": 400 },
+    { "name": "cost_usd", "weight": 1.5, "direction": "lower_is_better", "min_value": 10, "max_value": 200 }
+  ],
+  "inputs": [
+    {
+      "id": "c1",
+      "strength": "hard",
+      "source": { "name": "stakeholder_A", "reliability": 0.9 },
+      "timestamp": "2026-04-01T00:00:00Z",
+      "claim": { "type": "constraint", "factor": "latency_ms", "op": "<=", "bound": 120 },
+      "note": "We must be fast."
+    },
+    {
+      "id": "c2",
+      "strength": "hard",
+      "source": { "name": "stakeholder_B", "reliability": 0.9 },
+      "timestamp": "2026-04-01T00:00:30Z",
+      "claim": { "type": "constraint", "factor": "latency_ms", "op": ">=", "bound": 200 },
+      "note": "We must batch; latency will be higher."
+    },
+    {
+      "id": "v1",
+      "strength": "soft",
+      "source": { "name": "bench", "reliability": 0.8 },
+      "timestamp": "2026-03-28T00:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "x", "factor": "latency_ms", "value": 110 }
+    },
+    {
+      "id": "v2",
+      "strength": "soft",
+      "source": { "name": "bench", "reliability": 0.8 },
+      "timestamp": "2026-03-28T00:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "y", "factor": "latency_ms", "value": 240 }
+    },
+    {
+      "id": "v3",
+      "strength": "soft",
+      "source": { "name": "finance", "reliability": 0.8 },
+      "timestamp": "2026-03-28T00:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "x", "factor": "cost_usd", "value": 160 }
+    },
+    {
+      "id": "v4",
+      "strength": "soft",
+      "source": { "name": "finance", "reliability": 0.8 },
+      "timestamp": "2026-03-28T00:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "y", "factor": "cost_usd", "value": 60 }
+    }
+  ]
+}
+
