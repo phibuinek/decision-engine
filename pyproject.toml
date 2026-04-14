@@ -17,6 +17,9 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 
+[project.optional-dependencies]
+web = ["fastapi>=0.110", "uvicorn[standard]>=0.29"]
+
 [project.scripts]
 decision-engine = "decision_engine.cli:main"
 

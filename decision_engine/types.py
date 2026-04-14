@@ -88,6 +88,7 @@ class Conflict:
         "constraint_value",
         "constraint_constraint",
         "preference_preference",
+        "duplicate_input",
     ]
     factor: str | None
     option_id: str | None

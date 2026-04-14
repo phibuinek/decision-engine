@@ -1,0 +1,133 @@
+{
+  "multipliers": {
+    "price_usd": 0.836495,
+    "battery_hours": 1.457924,
+    "repair_risk": 0.79,
+    "weight_kg": 1.0
+  },
+  "total_outcomes": 12,
+  "correct_outcomes": 1,
+  "outcomes": [
+    {
+      "timestamp": "2026-04-14T16:25:16.199284+00:00",
+      "chosen": "a",
+      "actual": "b",
+      "factor_delta": {
+        "price_usd": -0.1243,
+        "battery_hours": 0.3306,
+        "repair_risk": -0.1,
+        "weight_kg": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-14T16:25:33.559896+00:00",
+      "chosen": "a",
+      "actual": "c",
+      "factor_delta": {
+        "price_usd": 0.1534,
+        "battery_hours": -0.2528,
+        "repair_risk": -0.4,
+        "weight_kg": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-14T16:25:55.457934+00:00",
+      "chosen": "a",
+      "actual": "b",
+      "factor_delta": {
+        "price_usd": -0.1243,
+        "battery_hours": 0.3306,
+        "repair_risk": -0.1,
+        "weight_kg": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-14T16:26:35.074597+00:00",
+      "chosen": "a",
+      "actual": "b",
+      "factor_delta": {
+        "price_usd": -0.1243,
+        "battery_hours": 0.3306,
+        "repair_risk": -0.1,
+        "weight_kg": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-14T16:26:37.111166+00:00",
+      "chosen": "a",
+      "actual": "b",
+      "factor_delta": {
+        "price_usd": -0.1243,
+        "battery_hours": 0.3306,
+        "repair_risk": -0.1,
+        "weight_kg": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-14T16:29:24.027799+00:00",
+      "chosen": "a",
+      "actual": "b",
+      "factor_delta": {
+        "price_usd": -0.1243,
+        "battery_hours": 0.3306,
+        "repair_risk": -0.1,
+        "weight_kg": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-14T16:29:32.755025+00:00",
+      "chosen": "a",
+      "actual": "b",
+      "factor_delta": {
+        "price_usd": -0.1243,
+        "battery_hours": 0.3306,
+        "repair_risk": -0.1,
+        "weight_kg": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-14T16:29:41.043995+00:00",
+      "chosen": "a",
+      "actual": "b",
+      "factor_delta": {
+        "price_usd": -0.1243,
+        "battery_hours": 0.3306,
+        "repair_risk": -0.1,
+        "weight_kg": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-14T16:29:56.602808+00:00",
+      "chosen": "a",
+      "actual": "b",
+      "factor_delta": {
+        "price_usd": -0.1243,
+        "battery_hours": 0.3306,
+        "repair_risk": -0.1,
+        "weight_kg": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-14T16:31:32.456737+00:00",
+      "chosen": "a",
+      "actual": "b",
+      "factor_delta": {
+        "price_usd": -0.1243,
+        "battery_hours": 0.3306,
+        "repair_risk": -0.1,
+        "weight_kg": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-14T16:31:42.243805+00:00",
+      "chosen": "a",
+      "actual": "b",
+      "factor_delta": {
+        "price_usd": -0.1243,
+        "battery_hours": 0.3306,
+        "repair_risk": -0.1,
+        "weight_kg": 0.0
+      }
+    }
+  ]
+}

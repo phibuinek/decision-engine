@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decision Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    textarea { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+    .score-bar { transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+    .fade-in { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+    details summary::-webkit-details-marker { display: none; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+<header class="bg-indigo-950 text-white px-6 py-4 shadow-xl">
+  <div class="max-w-screen-xl mx-auto flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-indigo-500 flex items-center justify-center text-lg font-black">D</div>
+      <div>
+        <h1 class="text-lg font-bold tracking-tight leading-none">Decision Engine</h1>
+        <p class="text-indigo-400 text-xs mt-0.5">Multi-factor scoring · Conflict detection · Adaptive feedback</p>
+      </div>
+    </div>
+    <div id="feedback-badge" class="hidden items-center gap-2 bg-indigo-800 border border-indigo-600 rounded-full px-3 py-1 text-xs text-indigo-200">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+      <span id="feedback-badge-text"></span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════ MAIN ════════════════════════════════ -->
+<main class="max-w-screen-xl mx-auto px-4 py-6 grid grid-cols-5 gap-5 items-start">
+
+  <!-- ─── LEFT PANEL (2 cols) ─── -->
+  <aside class="col-span-2 space-y-4 sticky top-4">
+
+    <!-- Examples -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Load example</p>
+      <div class="space-y-2">
+        <button onclick="loadExample('laptop')"
+          class="w-full text-left px-4 py-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 transition group">
+          <span class="text-sm font-semibold text-indigo-800 flex items-center gap-2">
+            <span class="text-base">💻</span> Laptop Purchase
+          </span>
+          <span class="text-xs text-indigo-400 mt-0.5 block">3 options · 4 factors · value + constraint conflicts</span>
+        </button>
+        <button onclick="loadExample('conflict')"
+          class="w-full text-left px-4 py-3 rounded-xl bg-red-50 hover:bg-red-100 border border-red-100 transition">
+          <span class="text-sm font-semibold text-red-800 flex items-center gap-2">
+            <span class="text-base">🚫</span> Infeasible Constraints
+          </span>
+          <span class="text-xs text-red-400 mt-0.5 block">All options disqualified · no valid decision</span>
+        </button>
+        <button onclick="loadExample('duplicate')"
+          class="w-full text-left px-4 py-3 rounded-xl bg-violet-50 hover:bg-violet-100 border border-violet-100 transition">
+          <span class="text-sm font-semibold text-violet-800 flex items-center gap-2">
+            <span class="text-base">🔁</span> Duplicate Statement IDs
+          </span>
+          <span class="text-xs text-violet-400 mt-0.5 block">Deduplication guarantee · injected duplicate dropped</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Request editor -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Request JSON</p>
+        <label class="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer select-none">
+          <input type="checkbox" id="use-feedback" class="rounded accent-indigo-600 w-3.5 h-3.5" />
+          Use learned weights
+        </label>
+      </div>
+      <textarea id="request-json" rows="22" spellcheck="false"
+        class="w-full text-[11px] leading-relaxed bg-slate-50 border border-slate-200 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-700"
+        placeholder="Load an example above or paste your own JSON…"></textarea>
+      <button id="eval-btn" onclick="runEvaluate()"
+        class="mt-3 w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl text-sm font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed">
+        Evaluate →
+      </button>
+      <p id="eval-error" class="hidden mt-2 text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2"></p>
+    </div>
+  </aside>
+
+  <!-- ─── RIGHT PANEL (3 cols) ─── -->
+  <section class="col-span-3 space-y-4" id="results-panel">
+    <!-- Empty state -->
+    <div id="empty-state" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-16 flex flex-col items-center text-center">
+      <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center text-3xl mb-4">🎯</div>
+      <p class="text-base font-semibold text-slate-600">Load an example and click Evaluate</p>
+      <p class="text-sm text-slate-400 mt-1">Decision, scores, and conflicts appear here</p>
+    </div>
+  </section>
+</main>
+
+<!-- ═══════════════════════════════ SCRIPT ══════════════════════════════ -->
+<script>
+'use strict';
+
+// ── state ──────────────────────────────────────────────────────────────────
+let evalId   = null;
+let lastData = null;
+
+// ── examples ───────────────────────────────────────────────────────────────
+async function loadExample(name) {
+  clearError();
+  try {
+    const res  = await fetch(`/api/examples/${name}`);
+    const data = await res.json();
+    document.getElementById('request-json').value = JSON.stringify(data, null, 2);
+  } catch (e) {
+    showError('Could not load example: ' + e.message);
+  }
+}
+
+// ── evaluate ───────────────────────────────────────────────────────────────
+async function runEvaluate() {
+  const raw = document.getElementById('request-json').value.trim();
+  if (!raw) { showError('Paste a JSON request or load an example.'); return; }
+
+  let body;
+  try { body = JSON.parse(raw); }
+  catch (e) { showError('Invalid JSON — ' + e.message); return; }
+
+  body.use_feedback = document.getElementById('use-feedback').checked;
+
+  setLoading(true);
+  clearError();
+  try {
+    const res = await fetch('/api/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) { showError(data.detail || 'Server error'); return; }
+    lastData = data;
+    evalId   = data.eval_id;
+    renderResults(data);
+    refreshBadge();
+  } catch (e) {
+    showError('Network error — ' + e.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ── feedback ───────────────────────────────────────────────────────────────
+async function recordOutcome() {
+  const sel = document.getElementById('actual-winner-select');
+  if (!sel || !evalId) return;
+  const winner = sel.value;
+  if (!winner) { alert('Please select the actual winner.'); return; }
+
+  const res  = await fetch('/api/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ eval_id: evalId, actual_winner: winner }),
+  });
+  const data = await res.json();
+  showFeedbackResult(data);
+  refreshBadge();
+
+  // Auto re-evaluate with adjusted weights so the user sees the effect immediately.
+  document.getElementById('use-feedback').checked = true;
+  await runEvaluate();
+}
+
+async function resetFeedback() {
+  if (!confirm('Reset all learned weight multipliers?')) return;
+  await fetch('/api/feedback', { method: 'DELETE' });
+  document.getElementById('feedback-badge').classList.add('hidden');
+  alert('Feedback store cleared.');
+}
+
+async function refreshBadge() {
+  try {
+    const res  = await fetch('/api/feedback/summary');
+    const data = await res.json();
+    const badge = document.getElementById('feedback-badge');
+    const text  = document.getElementById('feedback-badge-text');
+    if (data.total_outcomes_recorded > 0) {
+      const acc = data.accuracy !== null ? `· acc ${(data.accuracy * 100).toFixed(0)}%` : '';
+      text.textContent = `${data.total_outcomes_recorded} outcome${data.total_outcomes_recorded > 1 ? 's' : ''} recorded ${acc}`;
+      badge.classList.remove('hidden');
+      badge.classList.add('flex');
+    }
+  } catch (_) {}
+}
+
+// ── render results ─────────────────────────────────────────────────────────
+function renderResults(r) {
+  const panel = document.getElementById('results-panel');
+  panel.innerHTML = '';
+  panel.appendChild(mkDecisionBanner(r));
+  panel.appendChild(mkLeaderboard(r));
+  if (r.explanation?.factors?.length && r.explanation?.trace?.scores?.length) {
+    panel.appendChild(mkScoreMatrix(r));
+  }
+  if (r.conflicts?.length)    panel.appendChild(mkConflicts(r.conflicts));
+  if (r.assumptions?.length)  panel.appendChild(mkAssumptions(r.assumptions));
+  if (r.applied_multipliers && Object.keys(r.applied_multipliers).length) {
+    panel.appendChild(mkMultipliersBanner(r.applied_multipliers));
+  }
+  panel.appendChild(mkFeedbackPanel(r));
+}
+
+// ── decision banner ────────────────────────────────────────────────────────
+function mkDecisionBanner(r) {
+  const CFG = {
+    ok:               { bg:'bg-emerald-50', border:'border-emerald-200', icon:'✅', badge:'bg-emerald-100 text-emerald-700', title:'Decision made', tc:'text-emerald-900' },
+    tie:              { bg:'bg-amber-50',   border:'border-amber-200',   icon:'🤝', badge:'bg-amber-100 text-amber-700',    title:'Tie',           tc:'text-amber-900'   },
+    no_valid_options: { bg:'bg-red-50',     border:'border-red-200',     icon:'🚫', badge:'bg-red-100 text-red-700',        title:'No valid options', tc:'text-red-900' },
+    insufficient_info:{ bg:'bg-slate-50',   border:'border-slate-200',   icon:'❓', badge:'bg-slate-100 text-slate-600',   title:'Insufficient data', tc:'text-slate-800' },
+  };
+  const cfg = CFG[r.status] || CFG.insufficient_info;
+  const winLabel = r.decision ? (optLabel(r, r.decision) || r.decision) : (r.status === 'tie' ? 'Multiple tied' : '—');
+
+  const el = div(`rounded-2xl border ${cfg.bg} ${cfg.border} p-5 fade-in`);
+  el.innerHTML = `
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">${cfg.icon}</span>
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-widest ${cfg.tc} opacity-60">${cfg.title}</span>
+          <p class="text-2xl font-bold ${cfg.tc} leading-tight">${esc(winLabel)}</p>
+        </div>
+      </div>
+      <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${cfg.badge} whitespace-nowrap">${r.status.replace(/_/g,' ')}</span>
+    </div>
+    <p class="mt-3 text-sm ${cfg.tc} opacity-75 leading-relaxed">${esc(r.explanation?.summary || '')}</p>
+  `;
+  return el;
+}
+
+// ── leaderboard ────────────────────────────────────────────────────────────
+function mkLeaderboard(r) {
+  const scores = r.explanation?.trace?.scores || [];
+  const maxScore = Math.max(1e-9, ...scores.map(s => s.total));
+
+  const el = div('bg-white rounded-2xl border border-slate-200 shadow-sm p-5 fade-in');
+  el.innerHTML = `<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Leaderboard</p>`;
+
+  const list = div('space-y-4');
+  scores.forEach((s, idx) => {
+    const label = optLabel(r, s.option_id) || s.option_id;
+    const pct   = s.disqualified ? 0 : (s.total / maxScore) * 100;
+    const isWin = s.option_id === r.decision;
+    const isDQ  = s.disqualified;
+
+    const barCls  = isDQ ? 'bg-red-200'    : isWin ? 'bg-emerald-500' : 'bg-indigo-400';
+    const rankCls = isDQ ? 'bg-red-100 text-red-500' : isWin ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500';
+
+    const row = div('');
+    row.innerHTML = `
+      <div class="flex items-center gap-3 mb-1.5">
+        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${rankCls}">
+          ${isDQ ? '✕' : idx + 1}
+        </span>
+        <span class="flex-1 text-sm font-semibold text-slate-700">${esc(label)}</span>
+        <span class="text-xs font-mono text-slate-400">${s.total.toFixed(4)}</span>
+        ${isWin ? badge('bg-emerald-100 text-emerald-700','Winner') : ''}
+        ${isDQ  ? badge('bg-red-100 text-red-600','Disqualified') : ''}
+      </div>
+      <div class="ml-9 h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div class="${barCls} h-full rounded-full score-bar" style="width:${pct}%"></div>
+      </div>
+      ${isDQ && s.disqualify_reasons?.length
+        ? `<p class="ml-9 mt-1 text-[11px] text-red-500 leading-snug">${esc(s.disqualify_reasons[0])}</p>`
+        : ''}
+    `;
+    list.appendChild(row);
+  });
+  el.appendChild(list);
+  return el;
+}
+
+// ── score matrix ───────────────────────────────────────────────────────────
+function mkScoreMatrix(r) {
+  const scores  = r.explanation.trace.scores;
+  const factors = r.explanation.factors;
+  const optIds  = scores.map(s => s.option_id);
+
+  const el = div('bg-white rounded-2xl border border-slate-200 shadow-sm p-5 fade-in overflow-x-auto');
+  let html = `<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Factor Score Breakdown</p>
+    <table class="w-full text-xs border-collapse">
+      <thead>
+        <tr class="border-b border-slate-100">
+          <th class="text-left py-2 pr-4 text-slate-500 font-semibold">Factor</th>
+          <th class="text-right pr-4 text-slate-500 font-semibold">Weight</th>
+          <th class="text-right pr-4 text-slate-500 font-semibold">Direction</th>
+          ${optIds.map(id => {
+            const label = optLabel(r, id) || id;
+            const isWin = id === r.decision;
+            return `<th class="text-right pr-2 font-semibold ${isWin ? 'text-emerald-700' : 'text-slate-500'}">${esc(label)}${isWin ? ' ★' : ''}</th>`;
+          }).join('')}
+        </tr>
+      </thead>
+      <tbody>`;
+
+  factors.forEach(f => {
+    html += `<tr class="border-b border-slate-50 hover:bg-slate-50 transition">
+      <td class="py-2 pr-4 font-medium text-slate-700">${esc(f.name)}</td>
+      <td class="text-right pr-4 font-mono text-slate-500">${f.weight.toFixed(1)}</td>
+      <td class="text-right pr-4 text-slate-400">${f.direction === 'higher_is_better' ? '↑ higher' : '↓ lower'}</td>
+      ${optIds.map(oid => {
+        const sc = scores.find(s => s.option_id === oid);
+        const fc = sc?.by_factor?.[f.name];
+        if (!fc) return `<td class="text-right pr-2 text-slate-300 font-mono">—</td>`;
+        const n = fc.normalized;
+        const cellCls = n > 0.65 ? 'text-emerald-700 bg-emerald-50' : n < 0.35 ? 'text-red-600 bg-red-50' : 'text-slate-600';
+        const title = `raw: ${fc.raw}, norm: ${fc.normalized.toFixed(3)}, ev: ${fc.evidence_weight.toFixed(3)}`;
+        return `<td class="text-right pr-2 py-1">
+          <span class="px-1.5 py-0.5 rounded font-mono ${cellCls}" title="${esc(title)}">${fc.weighted.toFixed(4)}</span>
+        </td>`;
+      }).join('')}
+    </tr>`;
+  });
+
+  html += `</tbody></table>
+    <p class="mt-3 text-[11px] text-slate-400">Cells show <strong>weighted score</strong> per factor. Hover for raw/normalised/evidence details. Green &gt; 0.65 normalised, Red &lt; 0.35.</p>`;
+  el.innerHTML = html;
+  return el;
+}
+
+// ── conflicts ──────────────────────────────────────────────────────────────
+function mkConflicts(conflicts) {
+  const SEVER = {
+    high:   'bg-red-50 border-red-200',
+    medium: 'bg-amber-50 border-amber-200',
+    low:    'bg-blue-50 border-blue-200',
+  };
+  const SBADGE = {
+    high:   'bg-red-100 text-red-700',
+    medium: 'bg-amber-100 text-amber-700',
+    low:    'bg-blue-100 text-blue-700',
+  };
+
+  const el = div('bg-white rounded-2xl border border-slate-200 shadow-sm p-5 fade-in');
+  let html = `<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
+    Conflicts detected <span class="normal-case font-normal">(${conflicts.length})</span>
+  </p><div class="space-y-3">`;
+
+  conflicts.forEach(c => {
+    const scls  = SEVER[c.severity]  || SEVER.medium;
+    const sbadge = SBADGE[c.severity] || SBADGE.medium;
+    html += `
+      <div class="rounded-xl border p-3.5 ${scls}">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-[10px] font-bold uppercase tracking-wider bg-white bg-opacity-70 px-2 py-0.5 rounded">${esc(c.kind.replace(/_/g,' '))}</span>
+            ${c.factor ? `<span class="text-xs text-slate-500">factor: <strong>${esc(c.factor)}</strong></span>` : ''}
+            ${c.option_id ? `<span class="text-xs text-slate-500">option: <strong>${esc(c.option_id)}</strong></span>` : ''}
+          </div>
+          <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${sbadge}">${c.severity}</span>
+        </div>
+        <p class="text-sm leading-snug text-slate-700">${esc(c.summary)}</p>
+        <p class="text-xs text-slate-500 mt-1.5 leading-snug">
+          <span class="font-semibold">Resolution:</span> ${esc(c.resolution)}
+        </p>
+      </div>`;
+  });
+
+  html += `</div>`;
+  el.innerHTML = html;
+  return el;
+}
+
+// ── assumptions ────────────────────────────────────────────────────────────
+function mkAssumptions(assumptions) {
+  const el = div('bg-white rounded-2xl border border-slate-200 shadow-sm p-5 fade-in');
+  el.innerHTML = `
+    <details>
+      <summary class="text-[10px] font-bold text-slate-400 uppercase tracking-widest cursor-pointer list-none flex items-center gap-2">
+        <span class="flex-1">Assumptions (${assumptions.length})</span>
+        <span class="text-slate-300 text-base">▸</span>
+      </summary>
+      <ul class="mt-3 space-y-1.5">
+        ${assumptions.map(a => `
+          <li class="text-xs text-slate-600 flex gap-2 leading-snug">
+            <span class="text-slate-300 mt-0.5 shrink-0">·</span>${esc(a)}
+          </li>`).join('')}
+      </ul>
+    </details>`;
+  return el;
+}
+
+// ── applied multipliers banner ─────────────────────────────────────────────
+function mkMultipliersBanner(mults) {
+  const el = div('bg-indigo-50 border border-indigo-200 rounded-2xl p-4 fade-in');
+  const chips = Object.entries(mults).map(([k, v]) => {
+    const up  = v > 1;
+    const cls = up ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700';
+    return `<span class="text-xs px-2.5 py-1 rounded-full font-mono ${cls}">${esc(k)} ×${v.toFixed(3)} ${up ? '↑' : '↓'}</span>`;
+  }).join('');
+  el.innerHTML = `
+    <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-2">Learned weight adjustments applied</p>
+    <div class="flex flex-wrap gap-2">${chips}</div>
+    <p class="text-xs text-indigo-400 mt-2">These multipliers were learned from past recorded outcomes.</p>`;
+  return el;
+}
+
+// ── feedback panel ─────────────────────────────────────────────────────────
+function mkFeedbackPanel(r) {
+  const options = (r.explanation?.trace?.scores || []).map(s => ({
+    id: s.option_id, label: optLabel(r, s.option_id) || s.option_id,
+  }));
+
+  const opts = options.map(o =>
+    `<option value="${esc(o.id)}">${esc(o.label)}</option>`
+  ).join('');
+
+  const el = div('bg-white rounded-2xl border border-slate-200 shadow-sm p-5 fade-in');
+  el.innerHTML = `
+    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Feedback loop</p>
+    <p class="text-sm text-slate-500 mb-4 leading-relaxed">
+      After seeing the real-world outcome, tell the engine which option was actually best.
+      Factor weights are adjusted automatically for future evaluations.
+    </p>
+    <div class="flex gap-2">
+      <select id="actual-winner-select"
+        class="flex-1 text-sm border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+        <option value="">— Select actual winner —</option>
+        ${opts}
+      </select>
+      <button onclick="recordOutcome()"
+        class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition">
+        Record
+      </button>
+    </div>
+    <div id="feedback-result" class="mt-3"></div>
+    <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end">
+      <button onclick="resetFeedback()" class="text-xs text-red-400 hover:text-red-600 transition">
+        Reset feedback store
+      </button>
+    </div>`;
+  return el;
+}
+
+function showFeedbackResult(data) {
+  const el = document.getElementById('feedback-result');
+  if (!el) return;
+
+  if (data.outcome === 'correct') {
+    el.innerHTML = `<div class="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-center gap-2">
+      <span>✅</span> Recorded as correct — no weight adjustments needed.
+    </div>`;
+    return;
+  }
+
+  const adj = data.adjustments || {};
+  const rows = Object.entries(adj).map(([k, {before, after}]) => {
+    const up  = after > before;
+    const cls = up ? 'text-emerald-700' : 'text-red-600';
+    const arr = up ? '↑ boosted' : '↓ reduced';
+    return `<div class="flex justify-between items-center py-1 border-b border-amber-100 last:border-0 text-xs">
+      <span class="font-mono text-slate-700">${esc(k)}</span>
+      <span class="${cls} font-semibold">${before.toFixed(3)} → ${after.toFixed(3)} <span class="opacity-70">${arr}</span></span>
+    </div>`;
+  }).join('');
+
+  const s = data.summary;
+  const acc = s?.accuracy !== null ? `· accuracy ${(s.accuracy * 100).toFixed(0)}%` : '';
+
+  el.innerHTML = `
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+      <p class="text-xs font-semibold text-amber-800 mb-2">Weight multipliers updated:</p>
+      ${rows || '<p class="text-xs text-amber-600">No changes.</p>'}
+      ${s ? `<p class="mt-3 text-[11px] text-amber-600">${s.total_outcomes_recorded} outcomes recorded ${acc}</p>` : ''}
+    </div>`;
+}
+
+// ── utils ──────────────────────────────────────────────────────────────────
+function optLabel(r, id) {
+  return (r.explanation?.leaderboard || []).find(x => x.option_id === id)?.label;
+}
+
+function div(cls) {
+  const el = document.createElement('div');
+  if (cls) el.className = cls;
+  return el;
+}
+
+function badge(cls, text) {
+  return `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${cls}">${esc(text)}</span>`;
+}
+
+function esc(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showError(msg) {
+  const el = document.getElementById('eval-error');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function clearError() {
+  document.getElementById('eval-error').classList.add('hidden');
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('eval-btn');
+  btn.disabled   = on;
+  btn.textContent = on ? 'Evaluating…' : 'Evaluate →';
+}
+
+// init
+refreshBadge();
+</script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{
+  "_comment": "Demonstrates the deduplication guarantee. Statements s2 and s3 share an ID with s1 and s4 respectively. The engine must detect these, log a duplicate_input conflict, and process only the first occurrence of each ID.",
+  "options": [
+    { "id": "alpha", "label": "Option Alpha" },
+    { "id": "beta",  "label": "Option Beta" }
+  ],
+  "factors": [
+    { "name": "cost",        "weight": 1.5, "direction": "lower_is_better",  "min_value": 0, "max_value": 100 },
+    { "name": "reliability", "weight": 1.0, "direction": "higher_is_better", "min_value": 0, "max_value": 10  }
+  ],
+  "inputs": [
+    {
+      "id": "s1",
+      "strength": "soft",
+      "source": { "name": "vendor_sheet", "reliability": 0.9 },
+      "timestamp": "2026-04-01T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "alpha", "factor": "cost", "value": 40 },
+      "note": "First occurrence of s1 — this is the one the engine should use."
+    },
+    {
+      "id": "s1",
+      "strength": "soft",
+      "source": { "name": "attacker_injection", "reliability": 0.9 },
+      "timestamp": "2026-04-01T10:01:00Z",
+      "claim": { "type": "factor_value", "option_id": "alpha", "factor": "cost", "value": 1 },
+      "note": "Duplicate of s1 — must be dropped. If processed, it would push alpha's cost to near-zero and unfairly boost its score."
+    },
+    {
+      "id": "s2",
+      "strength": "soft",
+      "source": { "name": "vendor_sheet", "reliability": 0.9 },
+      "timestamp": "2026-04-01T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "beta", "factor": "cost", "value": 70 }
+    },
+    {
+      "id": "s3",
+      "strength": "soft",
+      "source": { "name": "review_site", "reliability": 0.75 },
+      "timestamp": "2026-04-01T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "alpha", "factor": "reliability", "value": 8 }
+    },
+    {
+      "id": "s4",
+      "strength": "soft",
+      "source": { "name": "review_site", "reliability": 0.75 },
+      "timestamp": "2026-04-01T10:00:00Z",
+      "claim": { "type": "factor_value", "option_id": "beta", "factor": "reliability", "value": 6 }
+    },
+    {
+      "id": "s4",
+      "strength": "soft",
+      "source": { "name": "review_site", "reliability": 0.75 },
+      "timestamp": "2026-04-01T10:01:00Z",
+      "claim": { "type": "factor_value", "option_id": "beta", "factor": "reliability", "value": 10 },
+      "note": "Duplicate of s4 — must be dropped."
+    }
+  ]
+}

@@ -62,6 +62,25 @@ class DecisionEngine:
         now: datetime | None = None,
         tie_epsilon: float = 1e-6,
     ) -> DecisionResult:
+        """
+        Evaluate a decision and return a fully-explained, deterministic result.
+
+        Design guarantees
+        -----------------
+        1. **Determinism** — identical inputs always produce identical outputs.
+           ``now`` is pinned at call time so recency weights don't drift mid-evaluation.
+        2. **Deduplication** — duplicate statement IDs are detected *before* evidence
+           aggregation and surfaced as a ``duplicate_input`` conflict.  Only the first
+           occurrence is processed, making evaluation order-stable.
+        3. **No silent data loss** — every dropped or ignored statement is recorded in
+           ``conflicts`` or ``assumptions``, so callers can audit what was skipped.
+        4. **Constraint priority** — HARD constraints are enforced before scoring;
+           a HARD violation disqualifies the option entirely rather than being absorbed
+           into a low score that might still rank.
+        5. **Bounded scores** — factor scores are always in [0, weight] before
+           evidence multipliers, so adding an extra zero-evidence factor cannot
+           boost an option's total above a known maximum.
+        """
         now = now or _now_utc()
 
         factor_by_name = {f.name: f for f in factors}
@@ -69,6 +88,42 @@ class DecisionEngine:
 
         assumptions: list[str] = []
         conflicts: list[Conflict] = []
+
+        # ------------------------------------------------------------------
+        # Deduplication — guarantee: each statement ID is processed at most once.
+        # Without this, a caller who accidentally submits the same evidence twice
+        # would silently double-count it, distorting weighted means and evidence
+        # multipliers.  We surface duplicates as a conflict so callers know their
+        # input was cleaned.
+        # ------------------------------------------------------------------
+        seen_ids: set[str] = set()
+        clean_inputs: list[InputStatement] = []
+        dup_ids: list[str] = []
+        for stmt in inputs:
+            if stmt.id in seen_ids:
+                dup_ids.append(stmt.id)
+            else:
+                seen_ids.add(stmt.id)
+                clean_inputs.append(stmt)
+        if dup_ids:
+            conflicts.append(
+                Conflict(
+                    kind="duplicate_input",
+                    factor=None,
+                    option_id=None,
+                    statements=tuple(dup_ids),
+                    summary=(
+                        f"Duplicate statement IDs detected: {', '.join(dup_ids)}. "
+                        "Only the first occurrence of each ID is processed."
+                    ),
+                    severity="medium",
+                    resolution=(
+                        "First occurrence kept; subsequent duplicates dropped. "
+                        "This ensures evidence is not double-counted."
+                    ),
+                )
+            )
+        inputs = clean_inputs
 
         # Collect evidence per option+factor for factor_value claims.
         value_evidence: dict[tuple[str, str], list[tuple[float, float, str]]] = {}
