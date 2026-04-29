@@ -1,0 +1,23 @@
+2026-04-29T12:01:45 INFO     [decision_engine.feedback] FeedbackStore initialised from 'de_feedback.json' (12 outcomes)
+2026-04-29T12:01:56 INFO     [decision_engine.api] EVALUATE eval_id=ecc28b00-0f13-4414-9818-65600f1a7387 status=ok decision=a conflicts=2 options=3 factors=4 inputs=13 use_feedback=False duration_ms=1.7
+2026-04-29T12:02:39 INFO     [decision_engine.feedback] Feedback recorded: outcome=incorrect chosen=a actual=b adjustments={'price_usd': '0.837->0.774', 'battery_hours': '1.458->1.623', 'repair_risk': '0.790->0.740'}
+2026-04-29T12:02:39 INFO     [decision_engine.api] EVALUATE eval_id=e444e534-501e-4b79-aa9a-1cddec4db37c status=ok decision=a conflicts=2 options=3 factors=4 inputs=13 use_feedback=True duration_ms=0.4
+2026-04-29T12:03:00 INFO     [decision_engine.feedback] Feedback recorded: outcome=incorrect chosen=a actual=b adjustments={'price_usd': '0.774->0.712', 'battery_hours': '1.623->1.788', 'repair_risk': '0.740->0.690'}
+2026-04-29T12:03:00 INFO     [decision_engine.api] EVALUATE eval_id=2b52475f-f2c7-41f3-ae41-f98885a68947 status=ok decision=a conflicts=2 options=3 factors=4 inputs=13 use_feedback=True duration_ms=0.4
+2026-04-29T12:03:07 INFO     [decision_engine.feedback] Feedback recorded: outcome=incorrect chosen=a actual=b adjustments={'price_usd': '0.712->0.650', 'battery_hours': '1.788->1.954', 'repair_risk': '0.690->0.640'}
+2026-04-29T12:03:07 INFO     [decision_engine.api] EVALUATE eval_id=1626d145-7231-4b63-816f-e19a4ba0793e status=ok decision=a conflicts=2 options=3 factors=4 inputs=13 use_feedback=True duration_ms=0.8
+2026-04-29T12:03:15 INFO     [decision_engine.feedback] Feedback recorded: outcome=incorrect chosen=a actual=b adjustments={'price_usd': '0.650->0.588', 'battery_hours': '1.954->2.119', 'repair_risk': '0.640->0.590'}
+2026-04-29T12:03:15 INFO     [decision_engine.api] EVALUATE eval_id=63441993-e634-4cb3-ae0c-9fff88db4c56 status=ok decision=a conflicts=2 options=3 factors=4 inputs=13 use_feedback=True duration_ms=0.6
+2026-04-29T12:03:19 INFO     [decision_engine.api] EVALUATE eval_id=54caf40f-27a0-4868-ab59-568fdadb0281 status=ok decision=a conflicts=2 options=3 factors=4 inputs=13 use_feedback=True duration_ms=0.6
+2026-04-29T12:05:22 INFO     [decision_engine.api] EVALUATE eval_id=508dd431-aed0-491a-b560-bdc724b127ea status=ok decision=a conflicts=2 options=3 factors=4 inputs=13 use_feedback=True duration_ms=0.6
+2026-04-29T12:05:28 INFO     [decision_engine.api] EVALUATE eval_id=57948875-7bbd-4033-bff4-0fa667f1538f status=ok decision=a conflicts=2 options=3 factors=4 inputs=13 use_feedback=False duration_ms=0.7
+2026-04-29T12:05:41 INFO     [decision_engine.feedback] Feedback recorded: outcome=incorrect chosen=a actual=c adjustments={'price_usd': '0.588->0.664', 'battery_hours': '2.119->1.993', 'repair_risk': '0.590->0.390'}
+2026-04-29T12:05:41 INFO     [decision_engine.api] EVALUATE eval_id=1d805056-3ceb-449c-a91b-01ca561e869f status=ok decision=a conflicts=2 options=3 factors=4 inputs=13 use_feedback=True duration_ms=0.4
+2026-04-29T12:08:32 INFO     [decision_engine.api] EVALUATE eval_id=81e54a03-88a8-4608-a867-8c9fd3e8b807 status=no_valid_options decision=None conflicts=1 options=2 factors=2 inputs=6 use_feedback=True duration_ms=0.3
+2026-04-29T12:11:50 INFO     [decision_engine.api] EVALUATE eval_id=d8f11d26-1676-4189-91c9-6679672d3236 status=ok decision=a conflicts=2 options=3 factors=4 inputs=13 use_feedback=True duration_ms=0.6
+2026-04-29T12:12:46 INFO     [decision_engine.api] EVALUATE eval_id=eef4e52f-40cc-432d-afdc-52a846698e68 status=ok decision=alpha conflicts=1 options=2 factors=2 inputs=6 use_feedback=True duration_ms=0.4
+2026-04-29T12:12:49 INFO     [decision_engine.api] EVALUATE eval_id=54740f8f-9e6d-491a-9b8c-8ded7fd866e3 status=ok decision=alpha conflicts=1 options=2 factors=2 inputs=6 use_feedback=True duration_ms=0.4
+2026-04-29T12:12:53 INFO     [decision_engine.api] EVALUATE eval_id=8dee7736-b714-4411-a393-1221b4eb1809 status=no_valid_options decision=None conflicts=1 options=2 factors=2 inputs=6 use_feedback=True duration_ms=0.2
+2026-04-29T12:12:58 INFO     [decision_engine.api] EVALUATE eval_id=f44473d4-1d12-4fb6-a4ac-deab329ed6cd status=ok decision=alpha conflicts=1 options=2 factors=2 inputs=6 use_feedback=True duration_ms=0.2
+2026-04-29T12:16:40 INFO     [decision_engine.api] EVALUATE eval_id=d90422e4-27ef-4ae5-aab5-be527251b95d status=no_valid_options decision=None conflicts=1 options=2 factors=2 inputs=6 use_feedback=False duration_ms=0.7
+2026-04-29T12:18:30 INFO     [decision_engine.api] EVALUATE eval_id=718bfa1e-afdd-4309-a852-a59b0061cb0c status=ok decision=alpha conflicts=1 options=2 factors=2 inputs=6 use_feedback=False duration_ms=0.4

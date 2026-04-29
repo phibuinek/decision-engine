@@ -390,20 +390,19 @@ class TestFeedbackLoop:
     def test_wrong_decision_adjusts_multipliers(self):
         options, factors, inputs = self._base_scenario()
         result = _engine().evaluate(options=options, factors=factors, inputs=inputs)
-        # Engine will pick 'fast' (high speed, lower cost penalty) — confirm or proceed
         chosen = result.decision
 
+        # Get path then close the file — os.replace() can't rename over an open handle on Windows.
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
-            store = FeedbackStore(tmp.name)
-            before = dict(store.summary()["weight_multipliers"])
+            tmp_name = tmp.name
 
-            # Tell the store that 'cheap' was actually the better choice.
-            actual = "cheap" if chosen == "fast" else "fast"
-            update = store.record_outcome(
-                scores=result.scores,
-                chosen_option=chosen,
-                actual_winner=actual,
-            )
+        store = FeedbackStore(tmp_name)
+        actual = "cheap" if chosen == "fast" else "fast"
+        update = store.record_outcome(
+            scores=result.scores,
+            chosen_option=chosen,
+            actual_winner=actual,
+        )
 
         assert update["outcome"] == "incorrect"
         assert update["adjustments"], "A wrong decision must produce multiplier adjustments"
@@ -414,8 +413,10 @@ class TestFeedbackLoop:
         chosen = result.decision
 
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
-            store = FeedbackStore(tmp.name)
-            update = store.record_outcome(
+            tmp_name = tmp.name
+
+        store = FeedbackStore(tmp_name)
+        update = store.record_outcome(
                 scores=result.scores,
                 chosen_option=chosen,
                 actual_winner=chosen,   # agree with engine
@@ -484,10 +485,12 @@ class TestFeedbackLoop:
         result = _engine().evaluate(options=options, factors=factors, inputs=inputs)
 
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
-            store = FeedbackStore(tmp.name)
-            store.record_outcome(result.scores, result.decision, "cheap")
-            raw = Path(tmp.name).read_text(encoding="utf-8")
-            parsed = json.loads(raw)   # must not raise
+            tmp_name = tmp.name
+
+        store = FeedbackStore(tmp_name)
+        store.record_outcome(result.scores, result.decision, "cheap")
+        raw    = Path(tmp_name).read_text(encoding="utf-8")
+        parsed = json.loads(raw)   # must not raise
 
         assert "multipliers" in parsed
         assert "total_outcomes" in parsed
